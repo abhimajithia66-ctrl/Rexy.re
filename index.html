@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rexy.rexy – Demo Games</title>
+<style>
+:root{--bg:#06241a;--bg2:#0b3626;--card:#0f4531;--line:#1c6b4a;--g:#2dff8a;--g2:#00c96b;--tx:#eafff3;--mut:#8fc4a8;--red:#ff4d5e;--vio:#a874ff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1000px 500px at 50% -10%,#0f5a3d,var(--bg));color:var(--tx);font-family:system-ui,Segoe UI,Roboto,sans-serif;min-height:100vh;max-width:520px;margin:auto;padding-bottom:80px}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0}
+.logo{font-weight:900;letter-spacing:.5px;font-size:28px;background:linear-gradient(90deg,#b6ffd6,var(--g),var(--g2));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 30px #2dff8a55;filter:drop-shadow(0 0 8px #2dff8a77)}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;position:sticky;top:0;background:#06241acc;backdrop-filter:blur(8px);z-index:5;border-bottom:1px solid var(--line)}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-weight:700;font-size:14px}
+.chip b{color:var(--g)}
+main{padding:16px}
+.banner{border-radius:18px;padding:22px 18px;background:linear-gradient(135deg,#0f6a45,#093d2a);border:1px solid var(--line);position:relative;overflow:hidden;margin-bottom:16px}
+.banner .logo{font-size:42px;display:block}
+.banner p{color:var(--mut);margin-top:6px}
+.banner::after{content:"🎰";position:absolute;right:14px;top:10px;font-size:64px;opacity:.9}
+.demo{display:inline-block;background:#ffd84d;color:#3a2d00;font-size:12px;font-weight:800;padding:3px 8px;border-radius:6px;margin-top:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.game{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:left}
+.game .ic{font-size:34px}.game h3{margin-top:8px}.game small{color:var(--mut)}
+.game:active{transform:scale(.98)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+h2{margin-bottom:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:linear-gradient(180deg,var(--g),var(--g2));color:#022;font-weight:800;border-radius:12px;padding:12px 16px}
+.btn.alt{background:var(--bg2);color:var(--tx);border:1px solid var(--line)}
+.btn.red{background:var(--red);color:#fff}.btn.vio{background:var(--vio);color:#fff}
+.btn.on{outline:3px solid #fff}
+.btn.full{width:100%}
+input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;margin:6px 0}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;padding:10px;border-radius:10px;background:var(--bg2);border:1px solid var(--line)}
+.tabs button.on{background:var(--g2);color:#022;font-weight:800}
+.timer{font-size:38px;font-weight:900;color:var(--g);text-align:center;font-variant-numeric:tabular-nums}
+.center{text-align:center}.mut{color:var(--mut);font-size:13px}
+.nums{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.nums button{padding:12px 0;border-radius:50%;background:var(--bg2);border:1px solid var(--line);font-weight:800}
+.nums button.on{outline:3px solid #fff}
+.hist{display:flex;gap:6px;flex-wrap:wrap}
+.ball{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px}
+.c-g{background:var(--g2);color:#022}.c-r{background:var(--red)}.c-v{background:var(--vio)}
+.mult{font-size:64px;font-weight:900;text-align:center;font-variant-numeric:tabular-nums}
+.sky{height:150px;border-radius:14px;background:linear-gradient(#0a2f4a,#06241a);position:relative;overflow:hidden;margin-bottom:10px}
+#plane{position:absolute;left:5%;bottom:5%;font-size:34px;transition:left .1s linear,bottom .1s linear}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;background:#04180f;border-top:1px solid var(--line);z-index:6}
+nav button{flex:1;padding:12px 0;background:none;color:var(--mut);font-size:12px}
+nav button span{display:block;font-size:20px}
+nav button.on{color:var(--g)}
+.tx{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.win{color:var(--g)}.lose{color:var(--red)}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#fff;color:#022;padding:10px 16px;border-radius:12px;font-weight:700;z-index:20;display:none}
+.auth{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:24px}
+.auth .logo{font-size:52px;text-align:center}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div id="app"></div>
+
+<script>
+/* ---------- storage (demo only, browser-local) ---------- */
+const S={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let users=S.get('rexy_users',{}),me=S.get('rexy_me',null),pending=S.get('rexy_pending',[]),hist=S.get('rexy_hist',{});
+const $=s=>document.querySelector(s);
+const fmt=n=>Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});
+function save(){S.set('rexy_users',users);S.set('rexy_me',me);S.set('rexy_pending',pending);S.set('rexy_hist',hist)}
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2200)}
+const U=()=>users[me];
+function tx(label,amt){U().tx=U().tx||[];U().tx.unshift({label,amt,t:new Date().toLocaleString()});U().tx=U().tx.slice(0,40);}
+function bal(d,label){U().bal+=d;tx(label,d);save();const b=$('#bal');if(b)b.textContent=fmt(U().bal)}
+function canBet(a){if(!(a>0)){toast('Enter a valid amount');return false}if(a>U().bal){toast('Not enough demo coins');return false}return true}
+
+/* ---------- auth ---------- */
+function authView(mode='login'){
+  $('#app').innerHTML=`<div class="auth"><div class="logo">Rexy.rexy</div>
+  <p class="center mut" style="margin:6px 0 18px">Free demo games · virtual coins only</p>
+  <div class="tabs"><button class="${mode=='login'?'on':''}" onclick="authView('login')">Login</button><button class="${mode=='reg'?'on':''}" onclick="authView('reg')">Register</button></div>
+  <input id="ph" placeholder="Mobile number" inputmode="numeric" maxlength="10">
+  <input id="pw" type="password" placeholder="Password (min 6 characters)">
+  ${mode=='reg'?'<input id="pw2" type="password" placeholder="Confirm password">':''}
+  <button class="btn full" style="margin-top:10px" onclick="${mode=='login'?'doLogin()':'doReg()'}">${mode=='login'?'Login':'Create account'}</button>
+  <p class="mut center" style="margin-top:14px">Demo only. No real money. Data stays in this browser.</p></div>`;
+}
+function doReg(){
+  const p=$('#ph').value.trim(),w=$('#pw').value;
+  if(!/^\d{10}$/.test(p))return toast('Enter a 10-digit mobile number');
+  if(w.length<6)return toast('Password needs 6+ characters');
+  if(w!==$('#pw2').value)return toast('Passwords do not match');
+  if(users[p])return toast('Account already exists. Please login');
+  users[p]={pw:w,bal:1000,tx:[{label:'Welcome demo coins',amt:1000,t:new Date().toLocaleString()}]};
+  me=p;save();go('#/home');
+}
+function doLogin(){
+  const p=$('#ph').value.trim(),w=$('#pw').value;
+  if(!users[p]||users[p].pw!==w)return toast('Wrong number or password');
+  me=p;save();go('#/home');
+}
+function logout(){me=null;save();authView()}
+function go(h){location.hash=h;route()}
+
+/* ---------- shell ---------- */
+function shell(inner,tab){
+  $('#app').innerHTML=`<header><span class="logo">Rexy.rexy</span><span class="chip">🪙 <b id="bal">${fmt(U().bal)}</b></span></header>
+  <main>${inner}</main>
+  <nav>${[['home','🏠','Home'],['wallet','👛','Wallet'],['me','👤','Profile']].map(([k,i,l])=>`<button class="${tab==k?'on':''}" onclick="go('#/${k}')"><span>${i}</span>${l}</button>`).join('')}</nav>`;
+}
+let timers=[];
+function clearT(){timers.forEach(clearInterval);timers=[]}
+function route(){
+  clearT();
+  if(!me||!users[me])return authView();
+  const r=(location.hash||'#/home').slice(2);
+  ({home:viewHome,wingo:viewWingo,aviator:viewAviator,flip:viewFlip,dice:viewDice,wallet:viewWallet,me:viewMe}[r]||viewHome)();
+}
+addEventListener('hashchange',route);
+
+/* ---------- home ---------- */
+function viewHome(){
+  const G=[['wingo','🎨','Wingo','Color prediction · 30s / 1m / 3m / 5m'],['aviator','✈️','Aviator','Cash out before it flies away'],['flip','🪙','Coin Flip','Heads or tails · 1.95x'],['dice','🎲','Dice','Over / under · pick your odds']];
+  shell(`<div class="banner"><span class="logo">Rexy.rexy</span><p>Play practice games with free demo coins.</p><span class="demo">DEMO · NO REAL MONEY</span></div>
+  <h2>Games</h2><div class="grid">${G.map(g=>`<button class="game" onclick="go('#/${g[0]}')"><div class="ic">${g[1]}</div><h3>${g[2]}</h3><small>${g[3]}</small></button>`).join('')}</div>`,'home');
+}
+
+/* ---------- wingo ---------- */
+let wMode=60,wChoice=null;
+const MODES={30:'30 sec',60:'1 min',180:'3 min',300:'5 min'};
+const colorOf=n=>n==0?['v','r']:n==5?['v','g']:n%2?['g']:['r'];
+const cName={g:'Green',r:'Red',v:'Violet'};
+function viewWingo(){
+  shell(`<h2>🎨 Wingo</h2><div class="tabs" id="wm">${Object.entries(MODES).map(([s,l])=>`<button data-s="${s}" class="${s==wMode?'on':''}">${l}</button>`).join('')}</div>
+  <div class="panel center"><div class="mut" id="wper"></div><div class="timer" id="wt"></div></div>
+  <div class="panel"><div class="row"><button class="btn" data-c="g">Green 2x</button><button class="btn vio" data-c="v">Violet 4.5x</button><button class="btn red" data-c="r">Red 2x</button></div>
+  <div class="nums">${[0,1,2,3,4,5,6,7,8,9].map(n=>`<button data-n="${n}">${n}</button>`).join('')}</div>
+  <input id="wamt" type="number" min="1" value="10" placeholder="Amount">
+  <div class="row" style="margin-bottom:8px">${[10,50,100,500].map(a=>`<button class="btn alt" onclick="$('#wamt').value=${a}">${a}</button>`).join('')}</div>
+  <button class="btn full" id="wbet">Place bet</button><p class="mut" id="wsel" style="margin-top:8px">Pick a color or number</p></div>
+  <div class="panel"><h2>Results</h2><div class="hist" id="whist"></div></div>
+  <div class="panel"><h2>My open bets</h2><div id="wopen" class="mut">None</div></div>`,'home');
+  $('#wm').onclick=e=>{const s=e.target.dataset.s;if(s){wMode=+s;wChoice=null;viewWingo()}};
+  document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>pick('c',b.dataset.c,b));
+  document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>pick('n',b.dataset.n,b));
+  function pick(t,v,b){wChoice={t,v};document.querySelectorAll('.btn.on,.nums .on').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#wsel').textContent='Selected: '+(t=='c'?cName[v]:'Number '+v)}
+  $('#wbet').onclick=()=>{
+    const a=+$('#wamt').value;if(!wChoice)return toast('Pick a color or number');if(!canBet(a))return;
+    const per=Math.floor(Date.now()/1000/wMode);
+    pending.push({user:me,mode:wMode,per,...wChoice,amt:a});bal(-a,'Wingo bet');toast('Bet placed');draw()};
+  function draw(){
+    const now=Date.now()/1000,left=wMode-(now%wMode),per=Math.floor(now/wMode);
+    $('#wt').textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(Math.floor(left%60)).padStart(2,'0');
+    $('#wper').textContent='Period '+per;
+    $('#whist').innerHTML=(hist[wMode]||[]).slice(0,15).map(n=>`<div class="ball c-${colorOf(n)[colorOf(n).length-1]}">${n}</div>`).join('')||'<span class="mut">No results yet</span>';
+    const mine=pending.filter(p=>p.user==me&&p.mode==wMode);
+    $('#wopen').innerHTML=mine.length?mine.map(p=>`<div class="tx"><span>${p.t=='c'?cName[p.v]:'No. '+p.v}</span><span>🪙 ${p.amt}</span></div>`).join(''):'None';
+  }
+  draw();timers.push(setInterval(()=>{resolveAll();if($('#wt'))draw()},1000));
+}
+function resolveAll(){
+  const out=[];
+  pending=pending.filter(p=>{
+    const cur=Math.floor(Date.now()/1000/p.mode);
+    if(p.per>=cur)return true;
+    const k=p.mode+'_'+p.per;resolveAll.r=resolveAll.r||{};
+    const n=resolveAll.r[k]??(resolveAll.r[k]=Math.floor(Math.random()*10));
+    if(!hist[p.mode]||hist[p.mode].per!==p.per){hist[p.mode]=hist[p.mode]||[];if(!hist[p.mode].seen)hist[p.mode].seen={};if(!hist[p.mode].seen[p.per]){hist[p.mode].seen[p.per]=1;hist[p.mode].unshift(n)}}
+    let pay=0;const cs=colorOf(n);
+    if(p.t=='n'&&+p.v===n)pay=p.amt*9;
+    if(p.t=='c'&&cs.includes(p.v))pay=p.amt*(p.v=='v'?4.5:2);
+    if(users[p.user]){const keep=me;me=p.user;if(pay)bal(pay,'Wingo win');me=keep;toast(pay?`Won 🪙 ${fmt(pay)} (result ${n})`:`Result ${n} – no win`)}
+    return false;
+  });
+  save();
+}
+
+/* ---------- aviator ---------- */
+function viewAviator(){
+  shell(`<h2>✈️ Aviator</h2><div class="panel"><div class="sky"><span id="plane">✈️</span></div><div class="mult" id="mx">1.00x</div><p class="center mut" id="ast">Place a bet to start the next flight</p></div>
+  <div class="panel"><input id="aamt" type="number" min="1" value="10"><button class="btn full" id="abtn">Bet</button></div>
+  <div class="panel"><h2>Recent crashes</h2><div class="hist" id="ahist"></div></div>`,'home');
+  let st='idle',m=1,crash=0,bet=0,iv=null;const H=S.get('rexy_ah',[]);
+  const drawH=()=>$('#ahist').innerHTML=H.slice(0,12).map(x=>`<div class="ball ${x>=2?'c-g':'c-r'}" style="width:auto;border-radius:14px;padding:0 8px">${x.toFixed(2)}x</div>`).join('')||'<span class="mut">None yet</span>';
+  drawH();
+  const btn=$('#abtn');
+  btn.onclick=()=>{
+    if(st=='idle'){
+      const a=+$('#aamt').value;if(!canBet(a))return;bet=a;bal(-a,'Aviator bet');
+      crash=Math.max(1,0.97/(1-Math.random()));crash=Math.min(crash,200);m=1;st='fly';
+      btn.textContent='Cash out';btn.classList.add('red');$('#ast').textContent='Flying...';
+      iv=setInterval(()=>{
+        m+=0.01*Math.max(1,m*0.6);
+        $('#mx').textContent=m.toFixed(2)+'x';
+        const p=Math.min(m/6,1);$('#plane').style.left=(5+p*80)+'%';$('#plane').style.bottom=(5+p*65)+'%';
+        if(m>=crash){end(false)}
+      },100);timers.push(iv);
+    }else if(st=='fly'){end(true)}
+  };
+  function end(won){
+    clearInterval(iv);st='idle';btn.textContent='Bet';btn.classList.remove('red');
+    if(won){const pay=bet*m;bal(pay,'Aviator cash out');$('#ast').textContent=`Cashed out at ${m.toFixed(2)}x · +🪙 ${fmt(pay)}`;toast('Cashed out!')}
+    else{$('#mx').textContent=crash.toFixed(2)+'x';$('#ast').textContent='Flew away at '+crash.toFixed(2)+'x';}
+    H.unshift(won?m:crash);S.set('rexy_ah',H.slice(0,20));drawH();
+    setTimeout(()=>{if($('#plane')){$('#plane').style.left='5%';$('#plane').style.bottom='5%'}},800);
+  }
+}
+
+/* ---------- coin flip ---------- */
+function viewFlip(){
+  shell(`<h2>🪙 Coin Flip</h2><div class="panel center"><div style="font-size:90px" id="coin">🪙</div><p class="mut" id="fr">Pick a side · pays 1.95x</p></div>
+  <div class="panel"><input id="famt" type="number" min="1" value="10"><div class="row"><button class="btn" style="flex:1" id="fh">Heads</button><button class="btn alt" style="flex:1" id="ft">Tails</button></div></div>`,'home');
+  const play=side=>{const a=+$('#famt').value;if(!canBet(a))return;bal(-a,'Flip bet');
+    const r=Math.random()<.5?'h':'t';$('#coin').textContent=r=='h'?'👑':'🦅';
+    if(r==side){bal(a*1.95,'Flip win');$('#fr').textContent='You won 🪙 '+fmt(a*1.95);$('#fr').className='win'}
+    else{$('#fr').textContent='You lost 🪙 '+fmt(a);$('#fr').className='lose'}};
+  $('#fh').onclick=()=>play('h');$('#ft').onclick=()=>play('t');
+}
+
+/* ---------- dice ---------- */
+function viewDice(){
+  shell(`<h2>🎲 Dice</h2><div class="panel center"><div style="font-size:70px;font-weight:900" id="dv">--</div><p class="mut" id="dr">Roll 0–99. Choose your target.</p></div>
+  <div class="panel"><div class="tabs"><button id="dov" class="on">Roll over</button><button id="dun">Roll under</button></div>
+  <p>Target: <b id="dt">50</b> · Pays <b id="dp">1.94</b>x</p><input type="range" id="drg" min="5" max="95" value="50" style="padding:0">
+  <input id="damt" type="number" min="1" value="10"><button class="btn full" id="droll">Roll</button></div>`,'home');
+  let over=true;const rg=$('#drg');
+  const mult=()=>(0.97*100/(over?99-rg.value:+rg.value)).toFixed(2);
+  const upd=()=>{$('#dt').textContent=rg.value;$('#dp').textContent=mult()};
+  rg.oninput=upd;
+  $('#dov').onclick=()=>{over=true;$('#dov').classList.add('on');$('#dun').classList.remove('on');upd()};
+  $('#dun').onclick=()=>{over=false;$('#dun').classList.add('on');$('#dov').classList.remove('on');upd()};
+  $('#droll').onclick=()=>{const a=+$('#damt').value;if(!canBet(a))return;bal(-a,'Dice bet');
+    const r=Math.floor(Math.random()*100),t=+rg.value;$('#dv').textContent=r;
+    const win=over?r>t:r<t;
+    if(win){const p=a*mult();bal(p,'Dice win');$('#dr').textContent='Won 🪙 '+fmt(p);$('#dr').className='win'}
+    else{$('#dr').textContent='Lost 🪙 '+fmt(a);$('#dr').className='lose'}};
+  upd();
+}
+
+/* ---------- wallet ---------- */
+function viewWallet(){
+  shell(`<div class="panel center"><div class="mut">Demo balance</div><div class="timer">🪙 ${fmt(U().bal)}</div><span class="demo">VIRTUAL COINS · NOT REAL MONEY</span></div>
+  <div class="panel"><h2>Add / remove demo coins</h2><input id="wa" type="number" min="1" value="500">
+  <div class="row"><button class="btn" style="flex:1" id="dep">Deposit</button><button class="btn alt" style="flex:1" id="wd">Withdraw</button></div></div>
+  <div class="panel"><h2>History</h2>${(U().tx||[]).map(t=>`<div class="tx"><span>${t.label}<br><small class="mut">${t.t}</small></span><b class="${t.amt>=0?'win':'lose'}">${t.amt>=0?'+':''}${fmt(t.amt)}</b></div>`).join('')||'<span class="mut">Nothing yet</span>'}</div>`,'wallet');
+  $('#dep').onclick=()=>{const a=+$('#wa').value;if(!(a>0))return toast('Enter an amount');bal(a,'Demo deposit');viewWallet()};
+  $('#wd').onclick=()=>{const a=+$('#wa').value;if(!canBet(a))return;bal(-a,'Demo withdrawal');viewWallet()};
+}
+
+/* ---------- profile ---------- */
+function viewMe(){
+  shell(`<div class="panel center"><div style="font-size:60px">👤</div><h2>${me.slice(0,2)}••••${me.slice(-2)}</h2><p class="mut">Demo account</p></div>
+  <div class="panel"><button class="btn alt full" onclick="if(confirm('Reset coins to 1000?')){U().bal=1000;U().tx=[];tx('Reset to 1000',1000);save();viewMe()}">Reset demo coins</button><br><br>
+  <button class="btn red full" onclick="logout()">Logout</button></div>`,'me');
+}
+
+route();
+</script>
+</body>
+</html>
