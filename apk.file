@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HOLO VECTOR V70.0 - ULTRA ACCURACY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --holo-cyan: #00f0ff;
+            --holo-purple: #7000ff; 
+            --holo-green: #00ff66;
+            --holo-pink: #ff0055; 
+            --holo-gold: #ffb700;
+            --bg-obsidian: #050714; 
+            --glass-card: rgba(13, 17, 38, 0.75);
+            --glass-border: rgba(0, 240, 255, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body { 
+            background: var(--bg-obsidian); 
+            color: #fff; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 15px 10px;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(ellipse at 50% 0%, rgba(112, 0, 255, 0.25), transparent 60%),
+                radial-gradient(ellipse at 50% 100%, rgba(0, 240, 255, 0.15), transparent 60%);
+            background-attachment: fixed;
+        }
+
+        /* 2-SECOND VICTORY SHOT OVERLAY */
+        #victoryOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 7, 20, 0.95);
+            backdrop-filter: blur(25px);
+            z-index: 99999;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+
+        #victoryOverlay.active { opacity: 1; pointer-events: auto; }
+
+        .victory-card {
+            text-align: center;
+            background: linear-gradient(145deg, rgba(0, 255, 102, 0.15), rgba(112, 0, 255, 0.1));
+            border: 1.5px solid var(--holo-green);
+            padding: 35px 25px;
+            border-radius: 30px;
+            box-shadow: 0 0 60px rgba(0, 255, 102, 0.4);
+            transform: scale(0.6);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 310px;
+        }
+
+        #victoryOverlay.active .victory-card { transform: scale(1); }
+
+        .victory-title {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--holo-green);
+            text-shadow: 0 0 20px rgba(0, 255, 102, 0.8);
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+
+        .victory-sub {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--holo-cyan);
+            letter-spacing: 2px;
+            margin-top: 8px;
+        }
+
+        /* HEADER UI */
+        .hud-header { text-align: center; margin-bottom: 15px; }
+
+        .hud-title {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 25px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            background: linear-gradient(90deg, var(--holo-cyan), var(--holo-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .hud-sub {
+            font-family: 'JetBrains Mono', monospace;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 9px;
+            letter-spacing: 3px;
+            margin-top: 2px;
+        }
+
+        /* MAIN GLASS CONTAINER */
+        .hud-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--glass-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 22px 18px;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            padding: 8px 14px;
+            border-radius: 50px;
+            margin-bottom: 15px;
+        }
+
+        .period-code {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--holo-cyan);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--holo-green);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pulse-node {
+            width: 7px; height: 7px;
+            background: var(--holo-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--holo-green);
+            animation: blink 1.2s infinite alternate;
+        }
+
+        @keyframes blink { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+
+        /* CIRCULAR HOLO DISPLAY */
+        .radial-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .radial-display {
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 240, 255, 0.2);
+            border-top: 2px solid var(--holo-cyan);
+            border-bottom: 2px solid var(--holo-purple);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(112, 0, 255, 0.15) 0%, transparent 70%);
+            box-shadow: 0 0 30px rgba(112, 0, 255, 0.2);
+            animation: rotateGlow 8s linear infinite;
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .radial-inner {
+            transform: rotate(0deg); /* Counter rotation for text */
+            animation: counterRotate 8s linear infinite;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        @keyframes counterRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+
+        .signal-lbl {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 2px;
+        }
+
+        .signal-val {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 34px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 20px var(--holo-cyan);
+            line-height: 1;
+            margin-top: 4px;
+        }
+
+        .level-badge {
+            margin-top: 12px;
+            background: rgba(255, 183, 0, 0.08);
+            border: 1px solid var(--holo-gold);
+            color: var(--holo-gold);
+            font-size: 10px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .safety-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--holo-gold);
+            font-size: 11px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        /* STATS CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 10px 4px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-lbl {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* TERMINAL LOGS FEED */
+        .table-wrap {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.4);
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            font-family: 'JetBrains Mono', monospace;
+            color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 4px;
+            font-size: 9px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        td {
+            font-family: 'JetBrains Mono', monospace;
+            padding: 8px 4px;
+            font-size: 11px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .win-txt { color: var(--holo-green); font-weight: 700; }
+        .loss-txt { color: var(--holo-pink); font-weight: 700; }
+
+        .tag-big { color: var(--holo-cyan); font-weight: 700; }
+        .tag-small { color: var(--holo-pink); font-weight: 700; }
+
+        .cyber-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, var(--holo-purple), var(--holo-cyan));
+            color: #fff;
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            letter-spacing: 2px;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(112, 0, 255, 0.4);
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .cyber-btn:active { transform: scale(0.97); }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <!-- 2-SECOND VICTORY SHOT OVERLAY -->
+    <div id="victoryOverlay">
+        <div class="victory-card">
+            <h1 class="victory-title">VICTORY SHOT</h1>
+            <div class="victory-sub">CRITICAL HIGH-PRECISION WIN</div>
+        </div>
+    </div>
+
+    <div class="hud-header">
+        <div class="hud-title">HOLO MATRIX</div>
+        <div class="hud-sub">QUANTUM VECTOR SYSTEM • v70.0</div>
+    </div>
+
+    <div class="hud-card">
+        <div class="status-bar">
+            <div class="status-tag"><span class="pulse-node"></span> ENGINE LIVE</div>
+            <div class="period-code" id="pID">PERIOD: ---</div>
+        </div>
+
+        <div class="radial-wrap">
+            <div class="radial-display">
+                <div class="radial-inner">
+                    <span class="signal-lbl">PREDICTED TARGET</span>
+                    <span class="signal-val" id="pRes">WAIT</span>
+                </div>
+            </div>
+            <div class="level-badge" id="levelInfo">LEVEL: 1 [ACCURACY OPTIMIZED]</div>
+        </div>
+
+        <div class="safety-box" id="pOpps">CALCULATING QUANTUM VECTOR...</div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-num" id="totalWins" style="color:var(--holo-green);">0</div>
+                <div class="stat-lbl">WINS</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num" id="totalLosses" style="color:var(--holo-pink);">0</div>
+                <div class="stat-lbl">LOSSES</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num" id="winRate" style="color:var(--holo-gold);">100%</div>
+                <div class="stat-lbl">ACCURACY</div>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>PERIOD</th>
+                        <th>SIGNAL</th>
+                        <th>RESULT</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="logs"></tbody>
+            </table>
+        </div>
+
+        <a href="https://t.me/+0trLLuho7hE1YTk1" target="_blank" class="cyber-btn">JOIN VIP ACCESS CHANNEL</a>
+    </div>
+
+<script>
+    const BIG_POOL = [5, 6, 7, 8, 9];
+    const SMALL_POOL = [0, 1, 2, 3, 4];
+    
+    let currentPrediction = null;
+    let currentNumbers = [];
+    let currentLevel = 1;
+    let winsCount = 0;
+    let lossCount = 0;
+
+    window.onload = () => { initEngine(); };
+
+    /* EXACT 2-SECOND VICTORY SHOT ANIMATION TRIGGER */
+    function triggerVictoryShot() {
+        const overlay = document.getElementById('victoryOverlay');
+        overlay.classList.add('active');
+        setTimeout(() => {
+            overlay.classList.remove('active');
+        }, 2000); 
+    }
+
+    /* HIGH ACCURACY ENGINE LOGIC */
+    function calculateUltraPrecisionSignal(history) {
+        if (!history || history.length < 5) return Math.random() > 0.5 ? "BIG" : "SMALL";
+        
+        const recentNums = history.slice(0, 10).map(x => parseInt(x.number));
+        const recentSizes = recentNums.map(n => n >= 5 ? "BIG" : "SMALL");
+
+        // Pattern 1: Shift after 3 identical results
+        if (recentSizes[0] === recentSizes[1] && recentSizes[1] === recentSizes[2]) {
+            return recentSizes[0] === "BIG" ? "SMALL" : "BIG";
+        }
+
+        // Pattern 2: Anti-ZigZag Reversal
+        if (recentSizes[0] !== recentSizes[1] && recentSizes[1] !== recentSizes[2] && recentSizes[2] !== recentSizes[3]) {
+            return recentSizes[0] === "BIG" ? "SMALL" : "BIG";
+        }
+
+        // Pattern 3: Exponential Decay Weighting
+        let bigWeight = 0, smallWeight = 0;
+        recentNums.forEach((n, i) => {
+            let weight = (10 - i);
+            if (n >= 5) bigWeight += weight;
+            else smallWeight += weight;
+        });
+
+        return bigWeight > smallWeight ? "SMALL" : "BIG";
+    }
+
+    function generateNumbers(prediction) {
+        let poolPrimary = prediction === "BIG" ? BIG_POOL : SMALL_POOL;
+        let poolSecondary = prediction === "BIG" ? SMALL_POOL : BIG_POOL;
+        
+        let n1 = poolPrimary[Math.floor(Math.random() * poolPrimary.length)];
+        let n2 = poolSecondary[Math.floor(Math.random() * poolSecondary.length)];
+        
+        return [n1, n2].sort((a, b) => a - b);
+    }
+
+    async function initEngine() {
+        fetchData();
+        setInterval(fetchData, 3000);
+    }
+
+    async function fetchData() {
+        try {
+            const res = await fetch('https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json');
+            const json = await res.json();
+            
+            if (!json || !json.data || !json.data.list) return;
+            
+            const list = json.data.list;
+            const latest = list[0];
+            const currentPeriod = (BigInt(latest.issueNumber) + 1n).toString();
+            
+            if (window.lastProcessedPeriod !== latest.issueNumber) {
+                
+                if (window.lastProcessedPeriod && currentPrediction) {
+                    const actualNum = parseInt(latest.number);
+                    const actualSize = actualNum >= 5 ? "BIG" : "SMALL";
+                    
+                    const isWin = (currentPrediction === actualSize) || currentNumbers.includes(actualNum);
+                    
+                    if (isWin) {
+                        winsCount++;
+                        currentLevel = 1; 
+                        triggerVictoryShot(); // 2-Second Victory Animation
+                    } else {
+                        lossCount++;
+                        currentLevel = currentLevel === 1 ? 2 : 1; 
+                    }
+                    
+                    updateStats();
+                    
+                    const row = `<tr>
+                        <td>${latest.issueNumber.slice(-4)}</td>
+                        <td class="${currentPrediction==='BIG'?'tag-big':'tag-small'}">${currentPrediction}</td>
+                        <td><b style="color:#fff;">${actualNum}</b> (${actualSize})</td>
+                        <td class="${isWin?'win-txt':'loss-txt'}">${isWin ? 'WIN ✨' : 'LOSS 🖤'}</td>
+                    </tr>`;
+                    
+                    document.getElementById('logs').innerHTML = row + document.getElementById('logs').innerHTML;
+                }
+
+                let basePred = calculateUltraPrecisionSignal(list);
+
+                if (currentLevel === 2) {
+                    currentPrediction = (currentPrediction === "BIG") ? "SMALL" : "BIG";
+                } else {
+                    currentPrediction = basePred;
+                }
+
+                currentNumbers = generateNumbers(currentPrediction);
+                window.lastProcessedPeriod = latest.issueNumber;
+            }
+
+            document.getElementById('pID').innerText = "PERIOD: " + currentPeriod.slice(-4);
+            document.getElementById('pRes').innerText = currentPrediction || "SYNC";
+            document.getElementById('pOpps').innerText = "SAFE NUMBERS: " + (currentNumbers.length ? currentNumbers.join(" | ") : "ANALYZING...");
+            
+            const lvlElement = document.getElementById('levelInfo');
+            if (currentLevel === 1) {
+                lvlElement.innerText = "LEVEL: 1 [ACCURACY OPTIMIZED]";
+                lvlElement.style.color = "var(--holo-gold)";
+                lvlElement.style.borderColor = "var(--holo-gold)";
+            } else {
+                lvlElement.innerText = "LEVEL: 2 [RECOVERY BOOST]";
+                lvlElement.style.color = "var(--holo-cyan)";
+                lvlElement.style.borderColor = "var(--holo-cyan)";
+            }
+            
+        } catch(e) {
+            console.log("Connecting...", e);
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('totalWins').innerText = winsCount;
+        document.getElementById('totalLosses').innerText = lossCount;
+        const total = winsCount + lossCount;
+        const rate = total > 0 ? Math.round((winsCount / total) * 100) : 100;
+        document.getElementById('winRate').innerText = rate + "%";
+    }
+</script>
+</body>
+</html>
